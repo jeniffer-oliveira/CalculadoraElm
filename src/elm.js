@@ -4370,7 +4370,14 @@ function _Browser_load(url)
 		}
 	}));
 }
-var $author$project$Main$init = 0;
+var $author$project$Main$Model = F3(
+	function (currentValueString, currentValue, currentOp) {
+		return {currentOp: currentOp, currentValue: currentValue, currentValueString: currentValueString};
+	});
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
+var $author$project$Main$init = A3($author$project$Main$Model, '', 0.0, $elm$core$Basics$identity);
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -4867,9 +4874,6 @@ var $elm$browser$Browser$External = function (a) {
 var $elm$browser$Browser$Internal = function (a) {
 	return {$: 'Internal', a: a};
 };
-var $elm$core$Basics$identity = function (x) {
-	return x;
-};
 var $elm$browser$Browser$Dom$NotFound = function (a) {
 	return {$: 'NotFound', a: a};
 };
@@ -5181,10 +5185,76 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			view: impl.view
 		});
 };
+var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Main$toFn = function (op) {
+	switch (op.$) {
+		case 'Add':
+			return $elm$core$Basics$add;
+		case 'Sub':
+			return $elm$core$Basics$sub;
+		case 'Mult':
+			return $elm$core$Basics$mul;
+		default:
+			return $elm$core$Basics$fdiv;
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		return model;
+		switch (msg.$) {
+			case 'Number':
+				var n = msg.a;
+				var novoValor = _Utils_ap(
+					model.currentValueString,
+					$elm$core$String$fromInt(n));
+				return _Utils_update(
+					model,
+					{
+						currentValue: A2(
+							$elm$core$Maybe$withDefault,
+							0,
+							$elm$core$String$toFloat(novoValor)),
+						currentValueString: novoValor
+					});
+			case 'Perform':
+				var op = msg.a;
+				var updatedValue = model.currentOp(model.currentValue);
+				return _Utils_update(
+					model,
+					{
+						currentOp: A2($author$project$Main$toFn, op, updatedValue),
+						currentValue: updatedValue,
+						currentValueString: ''
+					});
+			case 'Eval':
+				var result = model.currentOp(model.currentValue);
+				return _Utils_update(
+					model,
+					{currentOp: $elm$core$Basics$identity, currentValue: result, currentValueString: ''});
+			default:
+				return $author$project$Main$init;
+		}
 	});
+var $author$project$Main$Add = {$: 'Add'};
+var $author$project$Main$Div = {$: 'Div'};
+var $author$project$Main$Eval = {$: 'Eval'};
+var $author$project$Main$Mult = {$: 'Mult'};
+var $author$project$Main$Number = function (a) {
+	return {$: 'Number', a: a};
+};
+var $author$project$Main$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var $author$project$Main$Reset = {$: 'Reset'};
+var $author$project$Main$Sub = {$: 'Sub'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -5196,6 +5266,24 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$view = function (model) {
@@ -5213,7 +5301,11 @@ var $author$project$Main$view = function (model) {
 					[
 						$elm$html$Html$Attributes$class('display')
 					]),
-				_List_Nil),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromFloat(model.currentValue))
+					])),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -5226,7 +5318,9 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('operador')
+								$elm$html$Html$Attributes$class('operador'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Perform($author$project$Main$Add))
 							]),
 						_List_fromArray(
 							[
@@ -5236,7 +5330,9 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('operador')
+								$elm$html$Html$Attributes$class('operador'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Perform($author$project$Main$Sub))
 							]),
 						_List_fromArray(
 							[
@@ -5246,7 +5342,9 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('operador')
+								$elm$html$Html$Attributes$class('operador'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Perform($author$project$Main$Mult))
 							]),
 						_List_fromArray(
 							[
@@ -5256,17 +5354,20 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('operador')
+								$elm$html$Html$Attributes$class('operador'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Perform($author$project$Main$Div))
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('%')
+								$elm$html$Html$text('÷')
 							])),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('igual')
+								$elm$html$Html$Attributes$class('igual'),
+								$elm$html$Html$Events$onClick($author$project$Main$Eval)
 							]),
 						_List_fromArray(
 							[
@@ -5274,70 +5375,110 @@ var $author$project$Main$view = function (model) {
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(7))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('7')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(8))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('8')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(9))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('9')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(4))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('4')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(5))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('5')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(6))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('6')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(1))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('1')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(2))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('2')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(3))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('3')
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Number(0))
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('0')
@@ -5351,7 +5492,10 @@ var $author$project$Main$view = function (model) {
 							])),
 						A2(
 						$elm$html$Html$button,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Main$Reset)
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('C')
