@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora</title>
+    <title>Calculadora em Elm</title>
     <link href="css/main.css" rel="stylesheet">
     <link href="css/center.css" rel="stylesheet">
     <link href="css/reset.css" rel="stylesheet">
-    <script src="elm.json"></script> 
+    <script src="src/elm.js"></script> 
 </head>
 <body>
-    <container id="calculadora">
+    <div id="calculadora">
         <div class="display">
             <p>0</p>
         </div>
-        <container id="buttons">
-            <button class="operador">&soma</button>
-            <button class="operador">&subtracao</button>
-            <button class="operador">&multiplicacao</button>
-            <button class="operador">&divisao</button>
+        <div class="buttons">
+            <button class="operador">+</button>
+            <button class="operador">-</button>
+            <button class="operador">x</button>
+            <button class="operador">÷</button>
             <button>7</button>
             <button>8</button>
             <button>9</button>
@@ -32,9 +32,9 @@
             <button>0</button>
             <button>.</button>
             <button>C</button>
-            <button class="equals">=</button>
-        </container>
-    </container>
+            <button class="igual">=</button>
+        </div>
+    </div>
     <script>
         const app = Elm.Main.init({
             node: document.getElementById("calculadora"), 
